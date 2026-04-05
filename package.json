@@ -9,6 +9,7 @@
 	"files": [
 		".medusa/server",
 		".medusa/types",
+		"README.md",
 		"LICENSE"
 	],
 	"exports": {
