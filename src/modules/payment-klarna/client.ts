@@ -36,7 +36,7 @@ export type KlarnaSessionResponse = {
 export enum KlarnaFraudStatus {
 	ACCEPTED = 'ACCEPTED',
 	PENDING = 'PENDING',
-	REJECTED = 'REJECTED',
+	REJECTED = 'REJECTED'
 }
 
 export enum KlarnaOrderStatus {
@@ -45,13 +45,13 @@ export enum KlarnaOrderStatus {
 	CAPTURED = 'CAPTURED',
 	CANCELLED = 'CANCELLED',
 	EXPIRED = 'EXPIRED',
-	CLOSED = 'CLOSED',
+	CLOSED = 'CLOSED'
 }
 
 export enum KlarnaWebhookEvent {
 	FRAUD_RISK_ACCEPTED = 'FRAUD_RISK_ACCEPTED',
 	FRAUD_RISK_REJECTED = 'FRAUD_RISK_REJECTED',
-	FRAUD_RISK_STOPPED = 'FRAUD_RISK_STOPPED',
+	FRAUD_RISK_STOPPED = 'FRAUD_RISK_STOPPED'
 }
 
 // POST /payments/v1/authorizations/{token}/order — returns `order_status`
@@ -83,7 +83,7 @@ export enum KlarnaHppSessionStatus {
 	IN_PROGRESS = 'IN_PROGRESS',
 	COMPLETED = 'COMPLETED',
 	DISABLED = 'DISABLED',
-	CANCELLED = 'CANCELLED',
+	CANCELLED = 'CANCELLED'
 }
 
 export type KlarnaHppSessionStatusResponse = {
@@ -172,13 +172,13 @@ const BASE_URLS: Record<KlarnaEnvironment, Record<KlarnaRegion, string>> = {
 	playground: {
 		eu: 'https://api.playground.klarna.com',
 		na: 'https://api-na.playground.klarna.com',
-		oc: 'https://api-oc.playground.klarna.com',
+		oc: 'https://api-oc.playground.klarna.com'
 	},
 	live: {
 		eu: 'https://api.klarna.com',
 		na: 'https://api-na.klarna.com',
-		oc: 'https://api-oc.klarna.com',
-	},
+		oc: 'https://api-oc.klarna.com'
+	}
 }
 
 // --- Client ---
@@ -208,7 +208,7 @@ export class KlarnaClient {
 		const headers: Record<string, string> = {
 			'Content-Type': 'application/json',
 			Authorization: `Basic ${this.apiKey}`,
-			...extraHeaders,
+			...extraHeaders
 		}
 
 		let lastError: unknown
@@ -229,7 +229,7 @@ export class KlarnaClient {
 					method,
 					headers,
 					signal: controller.signal,
-					...(jsonBody && {body: jsonBody}),
+					...(jsonBody && {body: jsonBody})
 				})
 			} catch (error) {
 				clearTimeout(timeout)
@@ -329,6 +329,11 @@ export class KlarnaClient {
 	}
 
 	async refundOrder(orderId: string, amount: number): Promise<void> {
-		await this.request(`/ordermanagement/v1/orders/${orderId}/refunds`, 'POST', {refund_amount: amount}, this.idempotencyHeaders(orderId, `refund:${amount}`))
+		await this.request(
+			`/ordermanagement/v1/orders/${orderId}/refunds`,
+			'POST',
+			{refund_amount: amount},
+			this.idempotencyHeaders(orderId, `refund:${amount}`)
+		)
 	}
 }

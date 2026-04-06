@@ -21,7 +21,7 @@ import type {
 	RetrievePaymentOutput,
 	ProviderWebhookPayload,
 	WebhookActionResult,
-	Logger,
+	Logger
 } from '@medusajs/framework/types'
 import {
 	KlarnaClient,
@@ -31,7 +31,7 @@ import {
 	KlarnaOrderStatus,
 	KlarnaWebhookEvent,
 	VALID_ENVIRONMENTS,
-	VALID_REGIONS,
+	VALID_REGIONS
 } from './client'
 import type {KlarnaEnvironment, KlarnaRegion, KlarnaOrderLine, KlarnaOrderLineType, KlarnaPaymentMethodCategory, KlarnaSessionRequest} from './client'
 
@@ -85,7 +85,7 @@ export type KlarnaPaymentData = KlarnaSessionData & {
 	order_status?: KlarnaOrderStatus
 }
 
-function isKlarnaPaymentData(data: unknown): data is KlarnaPaymentData {
+const isKlarnaPaymentData = (data: unknown): data is KlarnaPaymentData => {
 	if (typeof data !== 'object' || data === null) {
 		return false
 	}
@@ -96,8 +96,22 @@ function isKlarnaPaymentData(data: unknown): data is KlarnaPaymentData {
 // --- Zero-decimal currencies (no minor unit conversion needed) ---
 
 const ZERO_DECIMAL_CURRENCIES = new Set([
-	'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW',
-	'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+	'BIF',
+	'CLP',
+	'DJF',
+	'GNF',
+	'JPY',
+	'KMF',
+	'KRW',
+	'MGA',
+	'PYG',
+	'RWF',
+	'UGX',
+	'VND',
+	'VUV',
+	'XAF',
+	'XOF',
+	'XPF'
 ])
 
 // --- Service ---
@@ -202,7 +216,7 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 					total_tax_amount: totalTaxAmount,
 					tax_rate: item.tax_rate,
 					type: item.type || 'physical',
-					...(item.reference && {reference: item.reference}),
+					...(item.reference && {reference: item.reference})
 				}
 			})
 		}
@@ -218,12 +232,17 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 				total_amount: amountMinorUnits,
 				total_tax_amount: taxAmountMinorUnits,
 				tax_rate: taxRate,
-				type: 'physical',
-			},
+				type: 'physical'
+			}
 		]
 	}
 
-	private buildSessionRequest(amountMinorUnits: number, taxAmountMinorUnits: number, currencyCode: string, data?: Record<string, any>): KlarnaSessionRequest {
+	private buildSessionRequest(
+		amountMinorUnits: number,
+		taxAmountMinorUnits: number,
+		currencyCode: string,
+		data?: Record<string, any>
+	): KlarnaSessionRequest {
 		const purchaseCountry = (data?.purchase_country as string) || this.config.defaultCountry
 		const locale = (data?.locale as string) || this.config.defaultLocale
 		const lineItems = data?.line_items as Array<KlarnaLineItemInput> | undefined
@@ -236,7 +255,7 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 			order_amount: amountMinorUnits,
 			order_tax_amount: taxAmountMinorUnits,
 			order_lines: this.buildOrderLines(amountMinorUnits, taxAmountMinorUnits, lineItems),
-			intent: 'buy',
+			intent: 'buy'
 		}
 	}
 
@@ -273,12 +292,12 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 				cancel: `${storefrontUrl}${checkoutPath}`,
 				back: `${storefrontUrl}${checkoutPath}`,
 				failure: `${storefrontUrl}${checkoutPath}?error=payment_failed`,
-				error: `${storefrontUrl}${checkoutPath}?error=payment_error`,
+				error: `${storefrontUrl}${checkoutPath}?error=payment_error`
 			},
 			options: {
 				place_order_mode: 'NONE',
-				purchase_type: 'BUY',
-			},
+				purchase_type: 'BUY'
+			}
 		})
 
 		const sessionData: KlarnaSessionData = {
@@ -292,12 +311,12 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 			order_tax_amount: taxAmountMinorUnits,
 			order_lines: sessionRequest.order_lines,
 			hpp_redirect_url: hpp.redirect_url,
-			hpp_session_id: hpp.session_id,
+			hpp_session_id: hpp.session_id
 		}
 
 		return {
 			id: session.session_id,
-			data: sessionData,
+			data: sessionData
 		}
 	}
 
@@ -311,7 +330,7 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 			order_amount: data.order_amount,
 			order_tax_amount: data.order_tax_amount,
 			order_lines: data.order_lines,
-			merchant_reference1: data.session_id,
+			merchant_reference1: data.session_id
 		}
 
 		if (data.authorization_token) {
@@ -321,9 +340,9 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 				data: {
 					...data,
 					order_id: order.order_id,
-					order_status: order.order_status,
+					order_status: order.order_status
 				},
-				status: PaymentSessionStatus.AUTHORIZED,
+				status: PaymentSessionStatus.AUTHORIZED
 			}
 		}
 
@@ -342,9 +361,9 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 						...data,
 						authorization_token: hppStatus.authorization_token,
 						order_id: order.order_id,
-						order_status: order.order_status,
+						order_status: order.order_status
 					},
-					status: PaymentSessionStatus.AUTHORIZED,
+					status: PaymentSessionStatus.AUTHORIZED
 				}
 			}
 
@@ -455,7 +474,7 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 			locale: data.locale,
 			order_amount: amountMinorUnits,
 			order_tax_amount: taxAmountMinorUnits,
-			order_lines: orderLines,
+			order_lines: orderLines
 		})
 
 		return {
@@ -464,8 +483,8 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 				order_amount: amountMinorUnits,
 				order_tax_amount: taxAmountMinorUnits,
 				order_lines: orderLines,
-				purchase_currency: currencyCode.toUpperCase(),
-			},
+				purchase_currency: currencyCode.toUpperCase()
+			}
 		}
 	}
 
@@ -481,8 +500,8 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 			data: {
 				...data,
 				client_token: session.client_token,
-				payment_method_categories: session.payment_method_categories,
-			},
+				payment_method_categories: session.payment_method_categories
+			}
 		}
 	}
 
@@ -519,7 +538,7 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 			this.logger_.error(`Klarna webhook processing failed for order=${orderId}: ${error}`)
 			return {
 				action: PaymentActions.FAILED,
-				data: {session_id: '', amount: new BigNumber(0)},
+				data: {session_id: '', amount: new BigNumber(0)}
 			}
 		}
 	}

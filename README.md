@@ -42,35 +42,35 @@ Register the module in your `medusa-config.ts`:
 import {defineConfig} from '@medusajs/framework/utils'
 
 export default defineConfig({
-  // ... other config
-  modules: [
-    {
-      resolve: '@stackd-solutions/medusa-payment-klarna/modules/payment-klarna',
-      options: {
-        apiKey: 'your-klarna-api-key',
-        environment: 'playground',
-        region: 'eu',
-        defaultCountry: 'NL',
-        defaultLocale: 'nl-NL',
-        storefrontUrl: 'https://shop.example.com',
-      }
-    }
-  ]
+	// ... other config
+	modules: [
+		{
+			resolve: '@stackd-solutions/medusa-payment-klarna/modules/payment-klarna',
+			options: {
+				apiKey: 'your-klarna-api-key',
+				environment: 'playground',
+				region: 'eu',
+				defaultCountry: 'NL',
+				defaultLocale: 'nl-NL',
+				storefrontUrl: 'https://shop.example.com'
+			}
+		}
+	]
 })
 ```
 
 ### Module Options
 
-| Option           | Type                           | Required | Default                          | Description                                         |
-| ---------------- | ------------------------------ | -------- | -------------------------------- | --------------------------------------------------- |
-| `apiKey`         | `string`                       | Yes      | --                               | Base64-encoded or raw `username:password` API key    |
-| `environment`    | `'playground'` \| `'live'`     | Yes      | --                               | Klarna API environment                              |
-| `region`         | `'eu'` \| `'na'` \| `'oc'`    | Yes      | --                               | Geographic region for API endpoints                 |
-| `defaultCountry` | `string`                       | Yes      | --                               | 2-letter ISO country code (e.g. `"NL"`, `"SE"`)    |
-| `defaultLocale`  | `string`                       | Yes      | --                               | RFC 1766 locale code (e.g. `"nl-NL"`, `"en-US"`)   |
-| `storefrontUrl`  | `string`                       | Yes      | --                               | Base URL of your storefront                         |
-| `callbackPath`   | `string`                       | No       | `/{language}/order/callback/klarna` | Path for payment completion callback             |
-| `checkoutPath`   | `string`                       | No       | `/{language}/checkout`           | Path for cancellation redirect                      |
+| Option           | Type                       | Required | Default                             | Description                                       |
+| ---------------- | -------------------------- | -------- | ----------------------------------- | ------------------------------------------------- |
+| `apiKey`         | `string`                   | Yes      | --                                  | Base64-encoded or raw `username:password` API key |
+| `environment`    | `'playground'` \| `'live'` | Yes      | --                                  | Klarna API environment                            |
+| `region`         | `'eu'` \| `'na'` \| `'oc'` | Yes      | --                                  | Geographic region for API endpoints               |
+| `defaultCountry` | `string`                   | Yes      | --                                  | 2-letter ISO country code (e.g. `"NL"`, `"SE"`)   |
+| `defaultLocale`  | `string`                   | Yes      | --                                  | RFC 1766 locale code (e.g. `"nl-NL"`, `"en-US"`)  |
+| `storefrontUrl`  | `string`                   | Yes      | --                                  | Base URL of your storefront                       |
+| `callbackPath`   | `string`                   | No       | `/{language}/order/callback/klarna` | Path for payment completion callback              |
+| `checkoutPath`   | `string`                   | No       | `/{language}/checkout`              | Path for cancellation redirect                    |
 
 ### API Key Format
 
@@ -101,21 +101,21 @@ Pass custom line items via `data.line_items` when initiating or updating a payme
 
 ```typescript
 const lineItems: Array<KlarnaLineItemInput> = [
-  {
-    name: 'Product Name',
-    quantity: 2,
-    unit_price: 1999,      // in minor units (cents)
-    tax_rate: 2100,         // 21.00% in basis points
-    reference: 'SKU-001',  // optional
-    type: 'physical',      // optional
-  },
-  {
-    name: 'Shipping',
-    quantity: 1,
-    unit_price: 499,
-    tax_rate: 2100,
-    type: 'shipping_fee',
-  }
+	{
+		name: 'Product Name',
+		quantity: 2,
+		unit_price: 1999, // in minor units (cents)
+		tax_rate: 2100, // 21.00% in basis points
+		reference: 'SKU-001', // optional
+		type: 'physical' // optional
+	},
+	{
+		name: 'Shipping',
+		quantity: 1,
+		unit_price: 499,
+		tax_rate: 2100,
+		type: 'shipping_fee'
+	}
 ]
 ```
 
@@ -135,22 +135,22 @@ yarn dev
 
 ```typescript
 import type {
-  KlarnaOptions,
-  KlarnaLineItemInput,
-  KlarnaSessionData,
-  KlarnaPaymentData,
-  KlarnaOrderLine,
-  KlarnaPaymentMethodCategory,
-  KlarnaOrderResponse,
-  KlarnaOrderDetails,
+	KlarnaOptions,
+	KlarnaLineItemInput,
+	KlarnaSessionData,
+	KlarnaPaymentData,
+	KlarnaOrderLine,
+	KlarnaPaymentMethodCategory,
+	KlarnaOrderResponse,
+	KlarnaOrderDetails
 } from '@stackd-solutions/medusa-payment-klarna'
 
 import {
-  KlarnaApiError,
-  KlarnaFraudStatus,
-  KlarnaOrderStatus,
-  KlarnaHppSessionStatus,
-  KlarnaWebhookEvent,
+	KlarnaApiError,
+	KlarnaFraudStatus,
+	KlarnaOrderStatus,
+	KlarnaHppSessionStatus,
+	KlarnaWebhookEvent
 } from '@stackd-solutions/medusa-payment-klarna'
 ```
 

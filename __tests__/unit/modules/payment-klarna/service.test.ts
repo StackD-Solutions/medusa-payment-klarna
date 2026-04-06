@@ -30,7 +30,14 @@ jest.mock('@medusajs/framework/utils', () => {
 		MathBN: {mult: (_a: unknown, _b: unknown) => Number(_a) * Number(_b)},
 		MedusaError: MockMedusaError,
 		PaymentActions: {NOT_SUPPORTED: 'not_supported', AUTHORIZED: 'authorized', FAILED: 'failed'},
-		PaymentSessionStatus: {AUTHORIZED: 'authorized', PENDING: 'pending', CAPTURED: 'captured', CANCELED: 'canceled', REQUIRES_MORE: 'requires_more', ERROR: 'error'},
+		PaymentSessionStatus: {
+			AUTHORIZED: 'authorized',
+			PENDING: 'pending',
+			CAPTURED: 'captured',
+			CANCELED: 'canceled',
+			REQUIRES_MORE: 'requires_more',
+			ERROR: 'error'
+		}
 	}
 })
 
@@ -38,7 +45,7 @@ const mockLogger = {
 	info: jest.fn(),
 	warn: jest.fn(),
 	error: jest.fn(),
-	debug: jest.fn(),
+	debug: jest.fn()
 } as unknown as Logger
 
 const mockClient = {
@@ -52,7 +59,7 @@ const mockClient = {
 	deleteAuthorization: jest.fn(),
 	getOrder: jest.fn(),
 	captureOrder: jest.fn(),
-	refundOrder: jest.fn(),
+	refundOrder: jest.fn()
 } as unknown as KlarnaClient
 
 const validOptions = {
@@ -61,7 +68,7 @@ const validOptions = {
 	region: 'eu' as const,
 	defaultCountry: 'NL',
 	defaultLocale: 'nl-NL',
-	storefrontUrl: 'https://shop.com',
+	storefrontUrl: 'https://shop.com'
 }
 
 function createService(configOverrides?: Partial<typeof validOptions> & Record<string, unknown>) {
@@ -80,7 +87,7 @@ const validPaymentData = {
 	locale: 'nl-NL',
 	order_amount: 1000,
 	order_tax_amount: 0,
-	order_lines: [{name: 'Order total', quantity: 1, unit_price: 1000, total_amount: 1000, total_tax_amount: 0, tax_rate: 0, type: 'physical'}],
+	order_lines: [{name: 'Order total', quantity: 1, unit_price: 1000, total_amount: 1000, total_tax_amount: 0, tax_rate: 0, type: 'physical'}]
 }
 
 beforeEach(() => {
@@ -290,7 +297,7 @@ describe('initiatePayment', () => {
 		const result = await service.initiatePayment({
 			amount: 10,
 			currency_code: 'EUR',
-			data: {line_items: [{name: 'Shirt', quantity: 1, unit_price: 1000, tax_rate: 2100, reference: 'SKU-1', type: 'physical'}]},
+			data: {line_items: [{name: 'Shirt', quantity: 1, unit_price: 1000, tax_rate: 2100, reference: 'SKU-1', type: 'physical'}]}
 		})
 
 		expect(result.data.order_lines[0].name).toBe('Shirt')
@@ -315,7 +322,7 @@ describe('initiatePayment', () => {
 		const result = await service.initiatePayment({
 			amount: 10,
 			currency_code: 'EUR',
-			data: {line_items: [{name: 'Thing', quantity: 2, unit_price: 500, tax_rate: 0}]},
+			data: {line_items: [{name: 'Thing', quantity: 2, unit_price: 500, tax_rate: 0}]}
 		})
 
 		expect(result.data.order_lines[0].type).toBe('physical')
@@ -356,7 +363,11 @@ describe('authorizePayment', () => {
 
 	it('should create order when HPP is COMPLETED with authorization_token', async () => {
 		const service = createService()
-		;(mockClient.getHppSessionStatus as jest.Mock).mockResolvedValue({session_id: 'hpp1', status: KlarnaHppSessionStatus.COMPLETED, authorization_token: 'hpp_at'})
+		;(mockClient.getHppSessionStatus as jest.Mock).mockResolvedValue({
+			session_id: 'hpp1',
+			status: KlarnaHppSessionStatus.COMPLETED,
+			authorization_token: 'hpp_at'
+		})
 		;(mockClient.createOrder as jest.Mock).mockResolvedValue({order_id: 'o2', order_status: KlarnaOrderStatus.AUTHORIZED})
 
 		const result = await service.authorizePayment({data: {...validPaymentData, hpp_session_id: 'hpp1'}})
@@ -515,7 +526,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return CANCELED when fraud_status is REJECTED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.REJECTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.REJECTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -524,7 +540,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return REQUIRES_MORE when fraud_status is PENDING', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.PENDING, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.PENDING,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -533,7 +554,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return CAPTURED when status is CAPTURED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.CAPTURED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.CAPTURED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -542,7 +568,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return CAPTURED when status is PART_CAPTURED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.PART_CAPTURED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.PART_CAPTURED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -551,7 +582,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return CANCELED when status is CANCELLED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.CANCELLED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.CANCELLED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -560,7 +596,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return CANCELED when status is EXPIRED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.EXPIRED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.EXPIRED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -569,7 +610,12 @@ describe('getPaymentStatus', () => {
 
 	it('should return AUTHORIZED for other statuses when fraud is ACCEPTED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getPaymentStatus({data: {...validPaymentData, order_id: 'o1'}})
 
@@ -622,7 +668,7 @@ describe('updatePayment', () => {
 		const result = await service.updatePayment({
 			data: {...validPaymentData, line_items: [{name: 'Hat', quantity: 1, unit_price: 2000, tax_rate: 2100}]},
 			amount: 20,
-			currency_code: 'EUR',
+			currency_code: 'EUR'
 		})
 
 		expect(result.data.order_lines[0].name).toBe('Hat')
@@ -650,7 +696,11 @@ describe('retrievePayment', () => {
 
 	it('should fetch session and return merged data when data is valid', async () => {
 		const service = createService()
-		;(mockClient.getSession as jest.Mock).mockResolvedValue({session_id: 'sess_1', client_token: 'new_ct', payment_method_categories: [{identifier: 'pay_later'}]})
+		;(mockClient.getSession as jest.Mock).mockResolvedValue({
+			session_id: 'sess_1',
+			client_token: 'new_ct',
+			payment_method_categories: [{identifier: 'pay_later'}]
+		})
 
 		const result = await service.retrievePayment({data: validPaymentData})
 
@@ -678,9 +728,19 @@ describe('getWebhookActionAndData', () => {
 
 	it('should return AUTHORIZED for FRAUD_RISK_ACCEPTED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000, merchant_reference1: 'sess_1'})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000,
+			merchant_reference1: 'sess_1'
+		})
 
-		const result = await service.getWebhookActionAndData({data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_ACCEPTED, order_id: 'o1'}, rawData: '', headers: {}})
+		const result = await service.getWebhookActionAndData({
+			data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_ACCEPTED, order_id: 'o1'},
+			rawData: '',
+			headers: {}
+		})
 
 		expect(result.action).toBe('authorized')
 		expect(result.data?.session_id).toBe('sess_1')
@@ -688,34 +748,67 @@ describe('getWebhookActionAndData', () => {
 
 	it('should return FAILED for FRAUD_RISK_REJECTED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.REJECTED, order_amount: 1000, merchant_reference1: 'sess_1'})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.REJECTED,
+			order_amount: 1000,
+			merchant_reference1: 'sess_1'
+		})
 
-		const result = await service.getWebhookActionAndData({data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_REJECTED, order_id: 'o1'}, rawData: '', headers: {}})
+		const result = await service.getWebhookActionAndData({
+			data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_REJECTED, order_id: 'o1'},
+			rawData: '',
+			headers: {}
+		})
 
 		expect(result.action).toBe('failed')
 	})
 
 	it('should return FAILED for FRAUD_RISK_STOPPED', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.REJECTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.REJECTED,
+			order_amount: 1000
+		})
 
-		const result = await service.getWebhookActionAndData({data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_STOPPED, order_id: 'o1'}, rawData: '', headers: {}})
+		const result = await service.getWebhookActionAndData({
+			data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_STOPPED, order_id: 'o1'},
+			rawData: '',
+			headers: {}
+		})
 
 		expect(result.action).toBe('failed')
 	})
 
 	it('should default session_id to empty string when merchant_reference1 is undefined', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
-		const result = await service.getWebhookActionAndData({data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_ACCEPTED, order_id: 'o1'}, rawData: '', headers: {}})
+		const result = await service.getWebhookActionAndData({
+			data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_ACCEPTED, order_id: 'o1'},
+			rawData: '',
+			headers: {}
+		})
 
 		expect(result.data?.session_id).toBe('')
 	})
 
 	it('should return NOT_SUPPORTED for unknown event type', async () => {
 		const service = createService()
-		;(mockClient.getOrder as jest.Mock).mockResolvedValue({order_id: 'o1', status: KlarnaOrderStatus.AUTHORIZED, fraud_status: KlarnaFraudStatus.ACCEPTED, order_amount: 1000})
+		;(mockClient.getOrder as jest.Mock).mockResolvedValue({
+			order_id: 'o1',
+			status: KlarnaOrderStatus.AUTHORIZED,
+			fraud_status: KlarnaFraudStatus.ACCEPTED,
+			order_amount: 1000
+		})
 
 		const result = await service.getWebhookActionAndData({data: {event_type: 'UNKNOWN_EVENT', order_id: 'o1'}, rawData: '', headers: {}})
 
@@ -726,7 +819,11 @@ describe('getWebhookActionAndData', () => {
 		const service = createService()
 		;(mockClient.getOrder as jest.Mock).mockRejectedValue(new Error('api down'))
 
-		const result = await service.getWebhookActionAndData({data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_ACCEPTED, order_id: 'o1'}, rawData: '', headers: {}})
+		const result = await service.getWebhookActionAndData({
+			data: {event_type: KlarnaWebhookEvent.FRAUD_RISK_ACCEPTED, order_id: 'o1'},
+			rawData: '',
+			headers: {}
+		})
 
 		expect(result.action).toBe('failed')
 		expect(result.data?.session_id).toBe('')

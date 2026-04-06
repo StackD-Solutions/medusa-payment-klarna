@@ -1,17 +1,12 @@
 import type {Logger} from '@medusajs/framework/types'
-import {
-	KlarnaClient,
-	KlarnaApiError,
-	VALID_ENVIRONMENTS,
-	VALID_REGIONS,
-} from '../../../../src/modules/payment-klarna/client'
+import {KlarnaClient, KlarnaApiError, VALID_ENVIRONMENTS, VALID_REGIONS} from '../../../../src/modules/payment-klarna/client'
 import type {KlarnaSessionRequest} from '../../../../src/modules/payment-klarna/client'
 
 const mockLogger = {
 	info: jest.fn(),
 	warn: jest.fn(),
 	error: jest.fn(),
-	debug: jest.fn(),
+	debug: jest.fn()
 } as unknown as Logger
 
 const mockSessionRequest: KlarnaSessionRequest = {
@@ -22,14 +17,15 @@ const mockSessionRequest: KlarnaSessionRequest = {
 	order_amount: 1000,
 	order_tax_amount: 174,
 	order_lines: [{name: 'Item', quantity: 1, unit_price: 1000, total_amount: 1000, total_tax_amount: 174, tax_rate: 2100, type: 'physical'}],
-	intent: 'buy',
+	intent: 'buy'
 }
 
-const mockResponse = (status: number, body?: object | string): Response => ({
-	ok: status >= 200 && status < 300,
-	status,
-	text: () => Promise.resolve(typeof body === 'string' ? body : body ? JSON.stringify(body) : ''),
-}) as unknown as Response
+const mockResponse = (status: number, body?: object | string): Response =>
+	({
+		ok: status >= 200 && status < 300,
+		status,
+		text: () => Promise.resolve(typeof body === 'string' ? body : body ? JSON.stringify(body) : '')
+	}) as unknown as Response
 
 let client: KlarnaClient
 
@@ -97,8 +93,8 @@ describe('request (via public methods)', () => {
 				method: 'GET',
 				headers: expect.objectContaining({
 					'Content-Type': 'application/json',
-					Authorization: 'Basic dGVzdDp0ZXN0',
-				}),
+					Authorization: 'Basic dGVzdDp0ZXN0'
+				})
 			})
 		)
 	})
@@ -112,7 +108,7 @@ describe('request (via public methods)', () => {
 			'https://api.playground.klarna.com/payments/v1/sessions',
 			expect.objectContaining({
 				method: 'POST',
-				body: JSON.stringify(mockSessionRequest),
+				body: JSON.stringify(mockSessionRequest)
 			})
 		)
 	})
@@ -145,11 +141,22 @@ describe('request (via public methods)', () => {
 	it('should return empty object for successful response with empty body', async () => {
 		;(global.fetch as jest.Mock).mockResolvedValue(mockResponse(200))
 
-		await expect(client.updateSession('s1', {purchase_country: 'NL', purchase_currency: 'EUR', locale: 'nl-NL', order_amount: 1000, order_tax_amount: 0, order_lines: []})).resolves.toBeUndefined()
+		await expect(
+			client.updateSession('s1', {
+				purchase_country: 'NL',
+				purchase_currency: 'EUR',
+				locale: 'nl-NL',
+				order_amount: 1000,
+				order_tax_amount: 0,
+				order_lines: []
+			})
+		).resolves.toBeUndefined()
 	})
 
 	it('should throw KlarnaApiError for 4xx with JSON error body', async () => {
-		;(global.fetch as jest.Mock).mockResolvedValue(mockResponse(400, {error_code: 'BAD_VALUE', error_messages: ['Invalid field'], correlation_id: 'corr-1'}))
+		;(global.fetch as jest.Mock).mockResolvedValue(
+			mockResponse(400, {error_code: 'BAD_VALUE', error_messages: ['Invalid field'], correlation_id: 'corr-1'})
+		)
 
 		await expect(client.createSession(mockSessionRequest)).rejects.toThrow(KlarnaApiError)
 		await expect(client.createSession(mockSessionRequest)).rejects.toThrow('[BAD_VALUE] Invalid field (correlation: corr-1)')
@@ -203,9 +210,12 @@ describe('request (via public methods)', () => {
 	})
 
 	it('should throw KlarnaApiError on request timeout', async () => {
-		;(global.fetch as jest.Mock).mockImplementation((_url: string, init: RequestInit) => new Promise((_resolve, reject) => {
-			init.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
-		}))
+		;(global.fetch as jest.Mock).mockImplementation(
+			(_url: string, init: RequestInit) =>
+				new Promise((_resolve, reject) => {
+					init.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
+				})
+		)
 
 		await expect(client.getSession('s1')).rejects.toThrow(/timed out/)
 	}, 60000)
@@ -235,7 +245,14 @@ describe('updateSession', () => {
 	it('should POST to /payments/v1/sessions/{sessionId}', async () => {
 		;(global.fetch as jest.Mock).mockResolvedValue(mockResponse(204))
 
-		await client.updateSession('s1', {purchase_country: 'NL', purchase_currency: 'EUR', locale: 'nl-NL', order_amount: 1000, order_tax_amount: 0, order_lines: []})
+		await client.updateSession('s1', {
+			purchase_country: 'NL',
+			purchase_currency: 'EUR',
+			locale: 'nl-NL',
+			order_amount: 1000,
+			order_tax_amount: 0,
+			order_lines: []
+		})
 
 		expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/payments/v1/sessions/s1'), expect.anything())
 	})
@@ -243,12 +260,14 @@ describe('updateSession', () => {
 
 describe('createHppSession', () => {
 	it('should POST to /hpp/v1/sessions', async () => {
-		;(global.fetch as jest.Mock).mockResolvedValue(mockResponse(200, {redirect_url: 'https://hpp.klarna.com', session_id: 'hpp1', session_url: 'url', expires_at: '2025-01-01'}))
+		;(global.fetch as jest.Mock).mockResolvedValue(
+			mockResponse(200, {redirect_url: 'https://hpp.klarna.com', session_id: 'hpp1', session_url: 'url', expires_at: '2025-01-01'})
+		)
 
 		const result = await client.createHppSession({
 			payment_session_url: 'https://api.playground.klarna.com/payments/v1/sessions/s1',
 			merchant_urls: {success: 'u', cancel: 'u', back: 'u', failure: 'u', error: 'u'},
-			options: {place_order_mode: 'NONE', purchase_type: 'BUY'},
+			options: {place_order_mode: 'NONE', purchase_type: 'BUY'}
 		})
 
 		expect(result.redirect_url).toBe('https://hpp.klarna.com')
@@ -270,8 +289,11 @@ describe('createOrder', () => {
 		;(global.fetch as jest.Mock).mockResolvedValue(mockResponse(200, {order_id: 'o1', order_status: 'AUTHORIZED'}))
 
 		const result = await client.createOrder('auth_tok', {
-			purchase_country: 'NL', purchase_currency: 'EUR', order_amount: 1000, order_tax_amount: 0,
-			order_lines: [{name: 'Item', quantity: 1, unit_price: 1000, total_amount: 1000, total_tax_amount: 0, tax_rate: 0, type: 'physical' as const}],
+			purchase_country: 'NL',
+			purchase_currency: 'EUR',
+			order_amount: 1000,
+			order_tax_amount: 0,
+			order_lines: [{name: 'Item', quantity: 1, unit_price: 1000, total_amount: 1000, total_tax_amount: 0, tax_rate: 0, type: 'physical' as const}]
 		})
 
 		expect(result.order_id).toBe('o1')
@@ -291,7 +313,9 @@ describe('deleteAuthorization', () => {
 
 describe('getOrder', () => {
 	it('should GET /ordermanagement/v1/orders/{orderId}', async () => {
-		;(global.fetch as jest.Mock).mockResolvedValue(mockResponse(200, {order_id: 'o1', status: 'AUTHORIZED', fraud_status: 'ACCEPTED', order_amount: 1000}))
+		;(global.fetch as jest.Mock).mockResolvedValue(
+			mockResponse(200, {order_id: 'o1', status: 'AUTHORIZED', fraud_status: 'ACCEPTED', order_amount: 1000})
+		)
 
 		const result = await client.getOrder('o1')
 
@@ -309,7 +333,7 @@ describe('captureOrder', () => {
 			expect.stringContaining('/orders/o1/captures'),
 			expect.objectContaining({
 				body: JSON.stringify({captured_amount: 1000}),
-				headers: expect.objectContaining({'Klarna-Idempotency-Key': expect.any(String)}),
+				headers: expect.objectContaining({'Klarna-Idempotency-Key': expect.any(String)})
 			})
 		)
 	})
@@ -325,7 +349,7 @@ describe('refundOrder', () => {
 			expect.stringContaining('/orders/o1/refunds'),
 			expect.objectContaining({
 				body: JSON.stringify({refund_amount: 500}),
-				headers: expect.objectContaining({'Klarna-Idempotency-Key': expect.any(String)}),
+				headers: expect.objectContaining({'Klarna-Idempotency-Key': expect.any(String)})
 			})
 		)
 	})
