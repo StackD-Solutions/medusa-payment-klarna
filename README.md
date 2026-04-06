@@ -63,7 +63,7 @@ export default defineConfig({
 
 | Option           | Type                       | Required | Default                             | Description                                       |
 | ---------------- | -------------------------- | -------- | ----------------------------------- | ------------------------------------------------- |
-| `apiKey`         | `string`                   | Yes      | --                                  | Base64-encoded or raw `username:password` API key |
+| `apiKey`         | `string`                   | Yes      | --                                  | Klarna API key or raw `username:password` credentials |
 | `environment`    | `'playground'` \| `'live'` | Yes      | --                                  | Klarna API environment                            |
 | `region`         | `'eu'` \| `'na'` \| `'oc'` | Yes      | --                                  | Geographic region for API endpoints               |
 | `defaultCountry` | `string`                   | Yes      | --                                  | 2-letter ISO country code (e.g. `"NL"`, `"SE"`)   |
@@ -76,7 +76,7 @@ export default defineConfig({
 
 The `apiKey` option accepts either:
 
-- A Base64-encoded string (e.g. `"dXNlcm5hbWU6cGFzc3dvcmQ="`)
+- A Klarna API key (e.g. `"klarna_test_api_MzRkMjY..."`) which is sent as-is via `Authorization: Basic <API_KEY>`
 - A raw `username:password` string (e.g. `"K12345_abcdef:secretkey"`) which will be Base64-encoded automatically
 
 ## Payment Flow

@@ -29,6 +29,8 @@ jest.mock('@medusajs/framework/utils', () => {
 		BigNumber: MockBigNumber,
 		MathBN: {mult: (_a: unknown, _b: unknown) => Number(_a) * Number(_b)},
 		MedusaError: MockMedusaError,
+		Modules: {PAYMENT: 'payment'},
+		ModuleProvider: (_module: string, opts: unknown) => opts,
 		PaymentActions: {NOT_SUPPORTED: 'not_supported', AUTHORIZED: 'authorized', FAILED: 'failed'},
 		PaymentSessionStatus: {
 			AUTHORIZED: 'authorized',
@@ -63,7 +65,7 @@ const mockClient = {
 } as unknown as KlarnaClient
 
 const validOptions = {
-	apiKey: 'dXNlcjpwYXNz',
+	apiKey: 'klarna_test_api_MzRkMjY',
 	environment: 'playground' as const,
 	region: 'eu' as const,
 	defaultCountry: 'NL',
@@ -100,9 +102,9 @@ describe('constructor', () => {
 		expect(service.config.apiKey).toBe(Buffer.from('user:pass').toString('base64'))
 	})
 
-	it('should pass apiKey unchanged when already base64', () => {
-		const service = createService({apiKey: 'dXNlcjpwYXNz'})
-		expect(service.config.apiKey).toBe('dXNlcjpwYXNz')
+	it('should pass plain API key unchanged', () => {
+		const service = createService({apiKey: 'klarna_test_api_XYZ'})
+		expect(service.config.apiKey).toBe('klarna_test_api_XYZ')
 	})
 
 	it('should strip trailing slashes from storefrontUrl', () => {
@@ -136,12 +138,8 @@ describe('validateOptions', () => {
 		expect(() => KlarnaPaymentService.validateOptions({...valid, apiKey: 123})).toThrow('apiKey')
 	})
 
-	it('should throw when apiKey is not raw credentials and not valid base64', () => {
-		expect(() => KlarnaPaymentService.validateOptions({...valid, apiKey: '!!!invalid!!!'})).toThrow('base64')
-	})
-
-	it('should throw when base64 apiKey does not decode to username:password', () => {
-		expect(() => KlarnaPaymentService.validateOptions({...valid, apiKey: Buffer.from('nocolon').toString('base64')})).toThrow('username:password')
+	it('should accept plain API key', () => {
+		expect(() => KlarnaPaymentService.validateOptions({...valid, apiKey: 'klarna_test_api_XYZ'})).not.toThrow()
 	})
 
 	it('should accept raw credential apiKey', () => {

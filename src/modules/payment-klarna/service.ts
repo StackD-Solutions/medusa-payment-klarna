@@ -134,27 +134,6 @@ class KlarnaPaymentService extends AbstractPaymentProvider<KlarnaOptions> {
 		if (!options.apiKey || typeof options.apiKey !== 'string') {
 			throw new MedusaError(MedusaError.Types.INVALID_DATA, 'Required option `apiKey` is missing in Klarna payment provider options.')
 		}
-
-		const apiKey = options.apiKey
-		const isRawCredentials = apiKey.includes(':')
-		const isValidBase64 = /^[A-Za-z0-9+/]+=*$/.test(apiKey)
-
-		if (!isRawCredentials && !isValidBase64) {
-			throw new MedusaError(
-				MedusaError.Types.INVALID_DATA,
-				'Option `apiKey` must be either base64-encoded "username:password" or a raw "username:password" string.'
-			)
-		}
-
-		if (isValidBase64 && !isRawCredentials) {
-			const decoded = Buffer.from(apiKey, 'base64').toString('utf-8')
-			if (!decoded.includes(':')) {
-				throw new MedusaError(
-					MedusaError.Types.INVALID_DATA,
-					'Option `apiKey` does not decode to a valid "username:password" pair. Provide base64(username:password) or raw "username:password".'
-				)
-			}
-		}
 		if (!options.environment || !VALID_ENVIRONMENTS.includes(options.environment as KlarnaEnvironment)) {
 			throw new MedusaError(
 				MedusaError.Types.INVALID_DATA,
