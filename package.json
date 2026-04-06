@@ -1,6 +1,6 @@
 {
 	"name": "@stackd-solutions/medusa-payment-klarna",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Klarna payment provider for Medusa",
 	"author": "StackD Solutions (https://stackd-solutions.io)",
 	"license": "Apache-2.0",
